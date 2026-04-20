@@ -199,4 +199,8 @@ Por ejemplo, una regla como:
 
 ```python
 def p_assignment(p):
+<<<<<<< HEAD
     'assignment : ID ASSIGN expression'
+=======
+    'assignment : ID ASSIGN expression'
+>>>>>>> c89bfed2ac03771229d311348be13a953c31050a
