@@ -8,31 +8,35 @@ KEYWORDS = {
     "string": "STRING_TYPE",
     "Read": "READ",
     "Write": "WRITE",
-    "return": "RETURN"
+    "return": "RETURN",
+    "func": "FUNC",
+    "true": "BOOL",
+    "false": "BOOL"
 }
-
 
 OPERATORS = {
     "+": "PLUS",
     "-": "MINUS",
     "*": "MULT",
     "/": "DIV",
+    "%": "MOD",
     ">": "GT",
     "<": "LT",
     "=": "ASSIGN",
     "==": "EQ",
     "!=": "NEQ",
     ">=": "GTE",
-    "<=": "LTE",
-    "#": "HASHTAG"
+    "<=": "LTE"
 }
 
 SYMBOLS = {
     "(": "LPAREN",
     ")": "RPAREN",
     ":": "COLON",
-    ",": "COMMA"
+    ",": "COMMA",
+    ";": "SEMICOLON"
 }
+
 
 class Token:
     def __init__(self, type_, value, line, col_start, col_end):
@@ -47,14 +51,15 @@ class Token:
             return f"{self.type}({self.value}) [{self.line}:{self.col_start}-{self.col_end}]"
         return f"{self.type} [{self.line}:{self.col_start}-{self.col_end}]"
 
+
 class Lexer:
     def __init__(self, text):
         self.lines = text.splitlines()
         self.line_num = 0
         self.tokens = []
         self.errors = []
-        self.indent_stack = [0]  
-
+        self.indent_stack = [0]
+        self.max_indent_levels = 5
 
     def tokenize(self):
         for raw_line in self.lines:
@@ -70,28 +75,44 @@ class Lexer:
 
     def process_line(self, raw_line):
         i = 0
-        col = 1
+        indent = 0
 
-        spaces = 0
-        while i < len(raw_line) and raw_line[i] == " ":
-            spaces += 1
+        # Contar indentación inicial: espacio = 1, tab = 4
+        while i < len(raw_line) and raw_line[i] in (" ", "\t"):
+            if raw_line[i] == " ":
+                indent += 1
+            else:
+                indent += 4
             i += 1
 
-        self.handle_indentation(spaces)
-
+        # Línea vacía o comentario completo
         if i >= len(raw_line) or raw_line[i] == "#":
             return
+
+        self.handle_indentation(indent)
+
+        col = indent + 1
+        line_has_tokens = False
+        last_token_end_col = col - 1
 
         while i < len(raw_line):
             ch = raw_line[i]
 
-            if ch.isspace():
+            # comentario desde aquí hasta fin de línea
+            if ch == "#":
+                break
+
+            if ch in (" ", "\t"):
+                if ch == " ":
+                    col += 1
+                else:
+                    col += 4
                 i += 1
-                col += 1
                 continue
 
             start_col = col
 
+            # IDENTIFICADORES / PALABRAS RESERVADAS
             if ch.isalpha() or ch == "_":
                 lex = ""
                 while i < len(raw_line) and (raw_line[i].isalnum() or raw_line[i] == "_"):
@@ -99,33 +120,45 @@ class Lexer:
                     i += 1
                     col += 1
 
-                if len(lex) > 31:
+                full_lex = lex
+                if len(full_lex) > 31:
                     self.errors.append(
                         f"line {self.line_num}, col {start_col}: ERROR identificador muy largo"
                     )
-                    lex = lex[:31]
+                    lex = full_lex[:31]
+                else:
+                    lex = full_lex
 
                 token_type = KEYWORDS.get(lex, "ID")
                 self.tokens.append(Token(token_type, lex, self.line_num, start_col, col - 1))
+                line_has_tokens = True
+                last_token_end_col = col - 1
                 continue
 
+            # NÚMEROS
             if ch.isdigit():
                 num = ""
-                is_float = False
+                dot_count = 0
 
                 while i < len(raw_line) and (raw_line[i].isdigit() or raw_line[i] == "."):
                     if raw_line[i] == ".":
-                        if is_float:
-                            break
-                        is_float = True
+                        dot_count += 1
                     num += raw_line[i]
                     i += 1
                     col += 1
 
-                token_type = "FLOAT" if is_float else "INT"
-                self.tokens.append(Token(token_type, num, self.line_num, start_col, col - 1))
+                if dot_count > 1:
+                    self.errors.append(
+                        f"line {self.line_num}, col {start_col}: ERROR numero mal formado '{num}'"
+                    )
+                else:
+                    token_type = "FLOAT" if dot_count == 1 else "INT"
+                    self.tokens.append(Token(token_type, num, self.line_num, start_col, col - 1))
+                    line_has_tokens = True
+                    last_token_end_col = col - 1
                 continue
 
+            # STRINGS
             if ch == '"':
                 i += 1
                 col += 1
@@ -145,44 +178,88 @@ class Lexer:
                 i += 1
                 col += 1
                 self.tokens.append(Token("STRING", value, self.line_num, start_col, col - 1))
+                line_has_tokens = True
+                last_token_end_col = col - 1
                 continue
 
+            # OPERADORES DE 2 CARACTERES
             two = raw_line[i:i+2]
             if two in OPERATORS:
                 self.tokens.append(Token(OPERATORS[two], two, self.line_num, col, col + 1))
                 i += 2
                 col += 2
+                line_has_tokens = True
+                last_token_end_col = col - 1
                 continue
 
+            # OPERADORES DE 1 CARACTER
             if ch in OPERATORS:
                 self.tokens.append(Token(OPERATORS[ch], ch, self.line_num, col, col))
                 i += 1
                 col += 1
+                line_has_tokens = True
+                last_token_end_col = col - 1
                 continue
 
+            # SÍMBOLOS
             if ch in SYMBOLS:
                 self.tokens.append(Token(SYMBOLS[ch], ch, self.line_num, col, col))
                 i += 1
                 col += 1
+                line_has_tokens = True
+                last_token_end_col = col
                 continue
+
+            # ERROR: carácter inesperado
             self.errors.append(
-                f"line (self.line_num), col {col}: error, el caracter es inesperado '{ch}'"
+                f"line {self.line_num}, col {col}: ERROR caracter inesperado '{ch}'"
             )
-    
+            i += 1
+            col += 1
+
+        if line_has_tokens:
+            newline_col = max(last_token_end_col, 1)
+            self.tokens.append(Token("NEWLINE", None, self.line_num, newline_col, newline_col))
+
     def handle_indentation(self, spaces):
         current = self.indent_stack[-1]
 
         if spaces > current:
+            if len(self.indent_stack) >= self.max_indent_levels + 1:
+                self.errors.append(
+                    f"line {self.line_num}, col 1: ERROR excede maximo de niveles de indentacion"
+                )
+                return
+
             self.indent_stack.append(spaces)
             self.tokens.append(Token("INDENT", None, self.line_num, 1, spaces))
-        elif spaces < current:
-            while self.indent_stack and spaces < self.indent_stack[-1]:
+            return
+
+        if spaces < current:
+            original_stack = self.indent_stack[:]
+
+            while len(self.indent_stack) > 1 and spaces < self.indent_stack[-1]:
                 self.indent_stack.pop()
                 self.tokens.append(Token("DEDENT", None, self.line_num, 1, spaces))
-        if self.indent_stack[-1] != spaces:
-            self.errors.append(
-                f"line {self.line_num}, col 1: error de indentacion invalida"
-            )
+
+            if self.indent_stack[-1] != spaces:
+                self.errors.append(
+                    f"line {self.line_num}, col 1: ERROR indentacion invalida"
+                )
+
+                # sincronizar al nivel más cercano inferior existente
+                lower_levels = [lvl for lvl in original_stack if lvl < spaces]
+
+                if lower_levels:
+                    target = max(lower_levels)
+                else:
+                    target = 0
+
+                while len(self.indent_stack) > 1 and self.indent_stack[-1] > target:
+                    self.indent_stack.pop()
+
+        # Si spaces == current, no hace nada
+
 
 def summarize_tokens(tokens, errors):
     summary = {
@@ -200,38 +277,39 @@ def summarize_tokens(tokens, errors):
     }
 
     keyword_types = set(KEYWORDS.values())
-   ## operators_types = set(OPERATORS.values())
-   ## symbol_types = set(SYMBOLS.values())
+    operator_types = set(OPERATORS.values())
+    symbol_types = set(SYMBOLS.values())
 
     for t in tokens:
         if t.type in keyword_types:
-            summary["KEYWORDS"] +=1
+            summary["KEYWORDS"] += 1
         elif t.type == "ID":
-            summary["ID"] +=1
+            summary["ID"] += 1
         elif t.type == "INT":
-            summary["INT"] +=1
+            summary["INT"] += 1
         elif t.type == "FLOAT":
-            summary["FLOAT"] +=1
+            summary["FLOAT"] += 1
         elif t.type == "STRING":
-            summary["STRING"] +=1
-        elif t.type == "OPERATORS":
-            summary["OPERATORS"] +=1
-        elif t.type == "SYMBOLS":   
-            summary["SYMBOLS"] +=1
+            summary["STRING"] += 1
+        elif t.type in operator_types:
+            summary["OPERATORS"] += 1
+        elif t.type in symbol_types:
+            summary["SYMBOLS"] += 1
         elif t.type == "INDENT":
-            summary["INDENT"] +=1
+            summary["INDENT"] += 1
         elif t.type == "DEDENT":
-            summary["DEDENT"] +=1
+            summary["DEDENT"] += 1
         elif t.type == "NEWLINE":
-            summary["NEWLINE"] +=1
+            summary["NEWLINE"] += 1
         elif t.type == "EOF":
-            summary["EOF"] +=1
+            summary["EOF"] += 1
 
-    totalTokens = len(tokens)
+    total_tokens = len(tokens)
+    return summary, total_tokens, len(errors)
 
-    return summary, totalTokens, len(errors)
 
 import os
+
 
 def main():
     print("MiniLang - Analizador Léxico")
@@ -258,7 +336,6 @@ def main():
 
         summary, total, err_count = summarize_tokens(tokens, lexer.errors)
 
-        # construir resumen en una sola línea
         summary_parts = [f"Total={total}"]
         summary_parts += [f"{k}={v}" for k, v in summary.items()]
         summary_parts.append(f"ERRORES={err_count}")
