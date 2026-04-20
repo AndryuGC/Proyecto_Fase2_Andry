@@ -1,0 +1,10 @@
+int numero = 15;
+
+if numero < 10:
+    Write("Menor que 10");
+elif numero == 10:
+    Write("Es igual a 10");
+elif numero < 20:
+    Write("Entre 10 y 20");
+else:
+    Write("Mayor o igual a 20");

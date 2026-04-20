@@ -1,0 +1,10 @@
+line 17, col 1: ERROR indentacion invalida
+line 20, col 9: ERROR caracter inesperado '$'
+line 21, col 5: ERROR caracter inesperado '$'
+line 25, col 5: ERROR numero mal formado '0.12.3'
+line 28, col 8: ERROR identificador muy largo
+line 29, col 1: ERROR identificador muy largo
+line 32, col 7: ERROR cadena sin cerrar
+Línea 25, columna 11, símbolo ';': Error: expresión inválida
+Línea 32, columna 1, símbolo 'EOF': Error: expresión inválida
+Línea 32, columna 1, símbolo 'EOF': Error: se esperaba 'RPAREN' y se encontró 'EOF'

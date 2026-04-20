@@ -1,0 +1,14 @@
+line 9, col 7: ERROR caracter inesperado '@'
+line 12, col 7: ERROR cadena sin cerrar
+line 16, col 5: ERROR numero mal formado '12..3'
+line 19, col 5: ERROR identificador muy largo
+line 20, col 1: ERROR identificador muy largo
+line 25, col 1: ERROR indentacion invalida
+line 28, col 7: ERROR caracter inesperado '¿'
+Línea 9, columna 9, símbolo '2': Error: se esperaba 'NEWLINE' y se encontró 'INT'
+Línea 9, columna 9, símbolo '2': Error: sentencia no reconocida
+Línea 15, columna 1, símbolo 'float': Error: expresión inválida
+Línea 15, columna 7, símbolo 'y': Error: se esperaba 'RPAREN' y se encontró 'ID'
+Línea 15, columna 7, símbolo 'y': Error: se esperaba 'NEWLINE' y se encontró 'ID'
+Línea 15, columna 7, símbolo 'y': Error: sentencia inválida iniciando con identificador
+Línea 16, columna 10, símbolo ';': Error: expresión inválida

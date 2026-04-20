@@ -1,0 +1,5 @@
+func int sumar(int x, int y):
+    return x + y;
+
+int total = sumar(5, 3);
+Write(total);

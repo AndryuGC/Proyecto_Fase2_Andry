@@ -1,0 +1,11 @@
+bool activo = true;
+int edad = 20;
+
+if activo and edad >= 18:
+    Write("Acceso permitido");
+
+if not activo:
+    Write("Usuario inactivo");
+
+if edad > 18 or activo:
+    Write("Condicion logica valida");

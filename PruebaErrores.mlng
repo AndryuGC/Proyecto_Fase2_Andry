@@ -1,0 +1,31 @@
+int x = 10;
+int y = 5
+
+# ERROR 1: falta punto y coma y NEWLINE correcto arriba
+
+if x > y:
+    Write("Mayor"
+    # ERROR 2: paréntesis no cerrado
+
+    x = 12..3;
+    # ERROR 3: número mal formado
+
+    z = x + ;
+    # ERROR 4: expresión incompleta
+
+    @variable = 10;
+    # ERROR 5: caracter inválido
+
+    string nombre = "Andry
+    # ERROR 6: cadena sin cerrar
+
+    int variable_excesivamente_larga_que_supera_el_limite = 5;
+    # ERROR 7: identificador muy largo
+
+else
+    Write("Menor");
+    # ERROR 8: falta ':' en else
+
+while x < 20:
+Write(x);
+    # ERROR 9: indentación incorrecta

@@ -1,0 +1,5 @@
+int a = 8;
+int b = 4;
+int resultado = a + b * 2;
+
+Write(resultado);

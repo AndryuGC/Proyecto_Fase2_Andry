@@ -1,0 +1,7 @@
+int numero;
+Read("Ingrese un numero", numero);
+
+if numero > 10:
+    Write("El numero es mayor que 10");
+else:
+    Write("El numero es menor o igual a 10");

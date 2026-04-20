@@ -1,0 +1,10 @@
+line 10, col 9: ERROR numero mal formado '12..3'
+line 16, col 5: ERROR caracter inesperado '@'
+line 19, col 21: ERROR cadena sin cerrar
+line 22, col 9: ERROR identificador muy largo
+Línea 7, columna 17, símbolo 'NEWLINE': Error: error sintáctico
+Línea 13, columna 13, símbolo ';': Error: error sintáctico
+Línea 22, columna 5, símbolo 'int': Error: error sintáctico
+Línea 25, columna 1, símbolo 'DEDENT': Error: error sintáctico
+Línea 29, columna 1, símbolo 'DEDENT': Error: error sintáctico
+Línea 30, columna 1, símbolo 'Write': Error: error sintáctico
