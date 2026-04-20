@@ -1,15 +1,29 @@
 KEYWORDS = {
     "if": "IF",
+    "elif": "ELIF",
     "else": "ELSE",
     "while": "WHILE",
+
     "int": "INT_TYPE",
     "float": "FLOAT_TYPE",
     "bool": "BOOL_TYPE",
     "string": "STRING_TYPE",
+
     "Read": "READ",
+    "read": "READ",
     "Write": "WRITE",
+    "write": "WRITE",
+    "print": "WRITE",
+
     "return": "RETURN",
+
     "func": "FUNC",
+    "def": "FUNC",
+
+    "and": "AND",
+    "or": "OR",
+    "not": "NOT",
+
     "true": "BOOL",
     "false": "BOOL"
 }
@@ -268,6 +282,7 @@ def summarize_tokens(tokens, errors):
         "INT": 0,
         "FLOAT": 0,
         "STRING": 0,
+        "BOOL": 0,
         "OPERATORS": 0,
         "SYMBOLS": 0,
         "INDENT": 0,
@@ -276,14 +291,12 @@ def summarize_tokens(tokens, errors):
         "EOF": 0,
     }
 
-    keyword_types = set(KEYWORDS.values())
+    keyword_types = set(KEYWORDS.values()) - {"BOOL"}
     operator_types = set(OPERATORS.values())
     symbol_types = set(SYMBOLS.values())
 
     for t in tokens:
-        if t.type in keyword_types:
-            summary["KEYWORDS"] += 1
-        elif t.type == "ID":
+        if t.type == "ID":
             summary["ID"] += 1
         elif t.type == "INT":
             summary["INT"] += 1
@@ -291,6 +304,10 @@ def summarize_tokens(tokens, errors):
             summary["FLOAT"] += 1
         elif t.type == "STRING":
             summary["STRING"] += 1
+        elif t.type == "BOOL":
+            summary["BOOL"] += 1
+        elif t.type in keyword_types:
+            summary["KEYWORDS"] += 1
         elif t.type in operator_types:
             summary["OPERATORS"] += 1
         elif t.type in symbol_types:
@@ -312,8 +329,9 @@ import os
 
 
 def main():
-    print("MiniLang - Analizador Léxico")
-    print("Buscando archivos .mlng...\n")
+    print("Proyecto - Fase 2 - Andry Gonzalez Cantoral")
+    print("MiniLang - Analizador Léxico y base para Sintáctico")
+    print("------------------------------\n")
 
     files = [f for f in os.listdir() if f.endswith(".mlng")]
 
